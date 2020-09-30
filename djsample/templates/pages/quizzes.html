@@ -1,0 +1,17 @@
+{% extends 'pages/base.html' %}
+
+{% block title %}Quizzes{% endblock %}
+
+{% block content %}
+  <div class="quizzes" style="width: 1100px; margin: 2rem auto;">
+    <h1 class="title mx-4">Quizzes</h1>
+    <ul class="list-group m-4">
+      {% for quiz in quizzes %}
+        <li class="list-group-item">
+          <h6 class="align-self-center m-0">Quiz {{quiz.id}}</h6>
+          <a href="{% url 'quiz' quiz.id  %}""><button class="btn btn-secondary">Start</button></a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

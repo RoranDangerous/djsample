@@ -1,0 +1,23 @@
+{% extends 'pages/base.html' %}
+
+{% block title %}Quiz Create{% endblock %}
+
+{% block content %}
+  <div class="create-quiz card">
+    <div class="card-body">
+      <form id="create-quiz" onsubmit="onCreateQuiz(event)">
+        <div class="form-info">
+          <h1 class="title mx-4">New Quiz</h1>
+          <div class="controls">
+            <button class="btn btn-light mr-2" onclick="addNewQuestion(event)">+ Question</button>
+            <button class="btn btn-primary" type="submit" disabled>Save Quiz</button>
+          </div>
+        </div>
+
+        {% csrf_token %}
+        <ol>
+        </ol>
+      </form>
+    </div>
+  </div>
+{% endblock %}

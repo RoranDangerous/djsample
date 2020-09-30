@@ -1,0 +1,40 @@
+{% extends 'pages/base.html' %}
+
+{% block title %}Quiz{% endblock %}
+
+{% block content %}
+  <div class="submit-quiz card">
+    <div class="card-body">
+      <form id="submit-quiz" action="{% url 'quiz' quiz.id %}" method="POST">
+        <div class="form-info">
+          <h1 class="title mx-4 mb-0">Quiz {{ quiz.id }}</h1>
+          <div class="controls">
+            <button class="btn btn-primary" type="submit">Submit</button>
+          </div>
+
+        </div>
+
+        {% csrf_token %}
+        <ol>
+          {% for question in quiz.questions.all %}
+            <li>
+              <div class="form-group">
+                <label for="name-{{ question.id }}" style="font-weight: bold;">{{ question.text }}</label>
+                {% if question.is_multiple_choice %}
+                  {% for option in question.options.all %}
+                    <div class="form-check mb-1">
+                      <input id="option-{{ option.id }}" type="checkbox" class="form-check-input" name="answer_{{ question.id }}_{{ option.id }}">
+                      <label for="option-{{ option.id }}" class="form-check-label">{{ option.text }}</label>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <input type="text" class="form-control" id="name-{{ question.id }}" name="answer_{{ question.id }}" placeholder="Your Answer">
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      </form>
+    </div>
+  </div>
+{% endblock %}

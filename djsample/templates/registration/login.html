@@ -1,0 +1,25 @@
+{% extends 'pages/base.html' %}
+
+{% block title %}Quiz{% endblock %}
+
+{% block content %}
+<div class="card" style="width: 500px">
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-info">
+        <h1 class="title mx-4 w-100 text-center">Log In</h1>
+      </div>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.auto_id }}">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endfor %}
+      <div class="w-100 text-center">
+        <button class="btn btn-primary" type="submit">Log In</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
