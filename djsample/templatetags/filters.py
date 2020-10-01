@@ -2,7 +2,6 @@ from django import template
 from django.db.models.functions import Cast
 from django.db.models import Count, Case, When, IntegerField, F, Sum, FloatField, Sum, Q, BooleanField
 from djsample.models import StudentAnswer
-from djsample import queries
 
 register = template.Library()
 
