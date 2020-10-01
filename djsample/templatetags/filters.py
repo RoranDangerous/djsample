@@ -1,13 +1,26 @@
 from django import template
-from django.db.models.functions import Cast
-from django.db.models import Count, Case, When, IntegerField, F, Sum, FloatField, Sum, Q, BooleanField
+from django.db.models.functions import Cast, Coalesce, Least
+from django.db.models import Count, Case, When, IntegerField, F, Sum, FloatField, Sum, Q, BooleanField, Min, Value
 from djsample.models import StudentAnswer
 
 register = template.Library()
 
-@register.filter(name='is_completed')
-def is_completed(user, quiz):
-  return StudentAnswer.objects.filter(student=user, question__quiz=quiz).exists()
+
+@register.filter(name='get_color')
+def get_color(grade):
+  if grade is None:
+    return 'none'
+  elif grade >= 90:
+    return '#06ff0640'
+  elif grade >= 80:
+    return '#6dff093d'
+  elif grade >= 70:
+    return '#ffa50057'
+  elif grade >= 60:
+    return '#ffa5005e'
+  else:
+    return '#ff00002e'
+
 
 @register.filter(name='get_score')
 def get_score(user, quiz):
@@ -19,10 +32,12 @@ def get_score(user, quiz):
     Selecting correct Multiple Choice option = 1 / total number of options for the question.
     Not selecting invalid Multiple Choice options = 1 / total number of options for the question.
   '''
-  score = StudentAnswer.objects.filter(
-    student=user,
-    question__quiz=quiz
-  ).annotate(
+  answers = StudentAnswer.objects.filter(student=user, question__quiz=quiz)
+
+  if not answers.exists():
+    return None
+
+  score = answers.annotate(
     multiple_choice_score=Case(
       When(Q(question__options__answers=None) & Q(question__options__is_correct=False), then=1),
       When(~Q(question__options__answers=None) & Q(question__options__is_correct=False), then=0),
@@ -40,28 +55,31 @@ def get_score(user, quiz):
   ).aggregate(
     # Get sum of the Short Answer scores
     total=(
-      Sum(Case(
+      Coalesce(Sum(Case(
         When(~Q(short_answer_score=None), then=F('short_answer_score')),
         output_field=FloatField()
-      ))
+      )), 0)
       # Add calculated Multiple Choice score
-      + (
+      + Coalesce(
         Sum(Case(
           When(~Q(multiple_choice_score=None), then=F('multiple_choice_score')),
           output_field=FloatField()
         )) / Cast(Count(Case(
           When(~Q(multiple_choice_score=None), then=1.0),
           output_field=FloatField()
-        )), FloatField())
+        )), FloatField()), 0
       )
     )
-    # Divide by the total number of Short Answers + 1
+    # Divide by the total number of Short Answers + (1 if Multiple Choice exist)
     / (
       Cast(Count(Case(
         When(~Q(short_answer_score=None), then=1.0),
         output_field=FloatField()
       )), FloatField())
-      + 1.0
+      + Cast(Least(Count(Case(
+        When(~Q(multiple_choice_score=None), then=1.0),
+        output_field=FloatField()
+      )), 1.0), FloatField())
     )
   ).get('total')
-  return f'{round(score * 100, 2)}%'
+  return score and round(score * 100, 2)

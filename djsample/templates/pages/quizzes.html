@@ -9,25 +9,27 @@
     <h1 class="title mx-4">Quizzes</h1>
     <ul class="list-group m-4">
       {% for quiz in quizzes %}
-        <li class="list-group-item">
-          <h6 class="align-self-center m-0">Quiz {{quiz.id}}</h6>
-          <div>
-            {% if user|is_completed:quiz %}
-              <span class="mx-3">{{ user|get_score:quiz }}</span>
-            {% endif %}
-            <a href="{% url 'quiz' quiz.id  %}">
-              {% if user|is_completed:quiz %}
-                <button class="btn btn-secondary">
-                  Try Again
-                </button>
-              {% else %}
-                <button class="btn btn-primary">
-                  Complete
-                </button>
+        {% with user|get_score:quiz as grade %}  
+          <li class="list-group-item" style="background-color: {{ grade|get_color }};">
+            <h6 class="align-self-center m-0">Quiz {{quiz.id}}</h6>
+            <div>
+              {% if grade is not None %}
+                <span class="mx-3">{{ grade }}%</span>
               {% endif %}
-            </a>
-          </div>
-        </li>
+              <a href="{% url 'quiz' quiz.id  %}">
+                {% if grade is not None %}
+                  <button class="btn btn-secondary">
+                    Try Again
+                  </button>
+                {% else %}
+                  <button class="btn btn-primary">
+                    Complete
+                  </button>
+                {% endif %}
+              </a>
+            </div>
+          </li>
+        {% endwith %}
       {% endfor %}
     </ul>
   </div>
